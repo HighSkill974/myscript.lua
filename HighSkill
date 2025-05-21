@@ -1,0 +1,50 @@
+--[[ 
+   📜 Script de Spam M1 Automatique – Par HighSkill974
+   🔄 Fonctionne sur tous les mobs avec HumanoidRootPart
+   ⚙️ Spam ultra rapide auto-ajusté (minimum 5ms)
+   🔗 Exécutable avec loadstring (voir en bas)
+]]
+
+-- === CONFIGURATION ===
+local autoDelay = true -- true = auto, false = délai fixe
+local fixedDelay = 0.005 -- 5ms = max spam
+local damageValue = 2 -- valeur par défaut de M1
+
+-- === FONCTIONS UTILES ===
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+
+-- Détection de RemoteEvent automatiquement
+local M1Remote
+for _, v in pairs(game:GetDescendants()) do
+    if v:IsA("RemoteEvent") and v.Name == "RemoteEvent" then
+        M1Remote = v
+        break
+    end
+end
+if not M1Remote then
+    warn("❌ RemoteEvent non trouvé")
+    return
+end
+
+-- Fonction de spam
+local lastFire = 0
+local function fireM1()
+    local now = tick()
+    local delay = autoDelay and 0 or fixedDelay
+    if now - lastFire >= delay then
+        for i = 1, 4 do -- on envoie 4 FireServer à chaque frame
+            pcall(function()
+                M1Remote:FireServer(damageValue)
+            end)
+        end
+        lastFire = now
+    end
+end
+
+-- Boucle d'exécution ultra rapide
+RunService.RenderStepped:Connect(fireM1)
+
+print("✅ Spam M1 activé - Adaptatif : " .. tostring(autoDelay) .. ", Délai : " .. tostring(fixedDelay) .. "s")
